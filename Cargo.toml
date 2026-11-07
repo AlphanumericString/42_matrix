@@ -2,5 +2,7 @@
 name = "matrix"
 version = "0.1.0"
 edition = "2024"
+description = "A dependency-free linear algebra library (42 - Enter the Matrix)"
+license = "MIT"
 
 [dependencies]
