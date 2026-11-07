@@ -49,6 +49,22 @@ where
         return self;
     }
 }
+impl<K> Add<Matrix<K>> for Matrix<K>
+where
+    K: Copy + Default + Add<Output = K> + Mul<Output = K> + Debug + Sub<Output = K>,{
+    type Output = Matrix<K>;
+
+    fn add(self, rhs: Matrix<K>) -> Self::Output {
+        assert_eq!(self.cols, rhs.cols);
+        assert_eq!(self.rows, rhs.rows);
+
+        let mut r = Matrix::new(self.cols, self.rows);
+        for i in 0..rhs.data.len() {
+            r.data[i] =  self.data[i]+ rhs.data[i];
+        }
+        return self;
+    }
+}
 
 
 #[allow(dead_code)]
@@ -153,14 +169,9 @@ impl <K>  Matrix<K> where K: Copy + Default + Add<Output = K> + Mul<Output = K> 
     fn shape(&self) -> (usize, usize) {
         return (self.rows, self.cols);
     }
-    fn add(&mut self, _v: &Matrix<K>) -> () {
-        assert!(self.rows == _v.rows && self.cols == _v.cols);
-        let _res : Matrix<K> = Matrix{data:[K::default();0].to_vec(), rows : 0, cols:0};
-
-        for i in 0..self.data.len() {
-            self.data[i] = self.data[i] + _v.data[i];
-        }
-        return ;
+    fn add(mut self, _v: Matrix<K>) -> () {
+        let _res: Matrix<K> = self + _v;
+        self = _res;
     }
     fn sub(&mut self, _v: &Matrix<K>) -> () {
         todo!()
@@ -175,9 +186,10 @@ impl <K>  Matrix<K> where K: Copy + Default + Add<Output = K> + Mul<Output = K> 
 #[cfg(test)]
 mod tests {
     use crate::Matrix;
+    use crate::Vector;
 
     #[test]
-    fn creation (){
+    fn creation_m (){
         let m = Matrix::<f32>::from([[2., 3.], [4., 5.]]);
         assert!(m.rows == 2);
         assert!(m.cols == 2);
@@ -187,7 +199,7 @@ mod tests {
         assert_eq!(m.get(1, 1).unwrap(), 5.);
     }
     #[test]
-    fn is_square() {
+    fn is_square_m() {
         let m = Matrix::<f32>::from([[2., 3.], [4., 5.]]);
         assert_eq!(m.is_square(), true);
         let m = Matrix::<f32>::from([[2., 3., 4.], [5., 6., 7.], [8.,9.,10.]]);
@@ -211,24 +223,49 @@ mod tests {
         assert_eq!(m.shape(), (2,3));
     }
 
+    // #[test]
+    // fn add_m(){
+    //     let rhs = Matrix::<f32>::from([[2., 3.], [4., 5.]]);
+    //     let mut lhs = Matrix::<f32>::from([[5., 6.], [7., 8.]]);
+    //
+    //     lhs.dump();
+    //     rhs.dump();
+    //     lhs.add(rhs);
+    //     assert_eq!(lhs.get(1, 1).unwrap(), 5.+8.);
+    // }
+
+    #[test]
+    fn creation_v(){
+        let v = Vector::from([1.,2.,3.,7.,4.]);
+
+        assert!(v.size() == [1.,2.,3.,7.,4.].len());
+        assert!(v.get(0).unwrap() == [1.,2.,3.,7.,4.][0]);
+        assert!(v.get(1).unwrap() == [1.,2.,3.,7.,4.][1]);
+        assert!(v.get(2).unwrap() == [1.,2.,3.,7.,4.][2]);
+        assert!(v.get(3).unwrap() == [1.,2.,3.,7.,4.][3]);
+        assert!(v.get(4).unwrap() == [1.,2.,3.,7.,4.][4]);
+    }
+
+    #[test]
+    fn size() {
+        let v = Vector::from([2., 3., 4., 5.]);
+        assert_eq!(v.size(), 4);
+        let v = Vector::from([2., 3., 4., 5., 6., 7.]);
+        assert_eq!(v.size(), 6);
+    }
 
 }
 
 #[allow(dead_code)]
 fn main() {
-    let first_test = Matrix::<f32>::from([[2., 3.], [4., 5.], [6., 7.]]);
-    println!("{:?}", first_test);
-    first_test.dump();
+    println!("cargo test");
+    let rhs = Matrix::<f32>::from([[2., 3.], [4., 5.]]);
+    let mut lhs = Matrix::<f32>::from([[5., 6.], [7., 8.]]);
 
-    let lhs = Matrix::<f32>::from([[2., 3.], [4., 5.]]);
-    let mut rhs = Matrix::<f32>::from([[5., 6.], [7., 8.]]);
-
-    println!("{:?}+{:?}", rhs, lhs);
-    rhs.dump();
+    println!("{:?}+{:?}=", lhs, rhs);
     lhs.dump();
-    rhs.add(&lhs);
-    println!("{:?}", rhs);
     rhs.dump();
-    rhs.get(1, 1);
-
+    lhs.add(rhs);
+    println!("{:?}", lhs);
+    assert_eq!(lhs.get(1, 1).unwrap(), 5.+8.);
 }
